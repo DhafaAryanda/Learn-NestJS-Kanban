@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Version,
+  HttpCode,
+  HttpStatus,
+  ParseIntPipe,
+  NotFoundException,
+} from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -8,23 +21,35 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Post()
-  create(@Body() createTaskDto: CreateTaskDto) {
-    return this.tasksService.create(createTaskDto);
+  @HttpCode(HttpStatus.OK) // pada default semua response 200 kecuali post menghasilkan 201, tetapi dapat diubah menggunakan HttpCode
+  create(@Body() dto: CreateTaskDto) {
+    return this.tasksService.create(dto);
   }
 
+  @Version('1')
   @Get()
   findAll() {
     return this.tasksService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tasksService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    const task = this.tasksService.findOne(id);
+    if (task === undefined) {
+      throw new NotFoundException('task not found');
+    }
+    return task;
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    return this.tasksService.update(+id, updateTaskDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTaskDto) {
+    const task = this.tasksService.update(id, dto);
+
+    if (task === undefined) {
+      throw new NotFoundException('task not found');
+    }
+
+    return task;
   }
 
   @Delete(':id')
