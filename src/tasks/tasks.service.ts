@@ -36,7 +36,7 @@ export class TasksService {
     return this.tasks.find((task) => task.id === id && !task.isDeleted);
   }
 
-  update(id: number, dto: UpdateTaskDto) {
+  update(id: number, dto: UpdateTaskDto): Task | undefined {
     const task = this.findOne(id);
     if (task !== undefined) {
       if (dto.title) {
@@ -55,7 +55,12 @@ export class TasksService {
     return task;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} task`;
+  remove(id: number): Task | undefined {
+    const task = this.findOne(id);
+    if (task !== undefined) {
+      task.isDeleted = true;
+      task.updatedAt = Date.now();
+    }
+    return task;
   }
 }
