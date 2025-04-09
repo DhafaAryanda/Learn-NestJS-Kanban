@@ -33,7 +33,7 @@ export class TasksController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: number) {
     const task = this.tasksService.findOne(id);
     if (task === undefined) {
       throw new NotFoundException('task not found');
@@ -42,7 +42,7 @@ export class TasksController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTaskDto) {
+  update(@Param('id') id: number, @Body() dto: UpdateTaskDto) {
     const task = this.tasksService.update(id, dto);
 
     if (task === undefined) {
@@ -53,7 +53,13 @@ export class TasksController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tasksService.remove(+id);
+  remove(@Param('id') id: number) {
+    const task = this.tasksService.remove(id);
+
+    if (task === undefined) {
+      throw new NotFoundException('task not found');
+    }
+
+    return task;
   }
 }
