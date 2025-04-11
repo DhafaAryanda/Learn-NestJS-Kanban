@@ -30,4 +30,19 @@ describe('TasksService', () => {
     expect(tasks.isDeleted).toBe(false);
     expect(service.findAll()).toHaveLength(2);
   });
+
+  it('create 2 tasks should added 2 tasks', () => {
+    const dto: CreateTaskDto = {
+      title: 'task two',
+      description: 'this is task two',
+    };
+
+    let task = service.create(dto);
+    expect(task.id).toBe(3);
+
+    task = service.create(dto);
+    expect(task.id).toBe(4);
+
+    expect(service.findAll()).toHaveLength(3);
+  });
 });

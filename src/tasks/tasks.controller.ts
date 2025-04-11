@@ -29,24 +29,24 @@ export class TasksController {
   @Version('1')
   @Get()
   async findAll() {
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
     return this.tasksService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    const task = this.tasksService.findOne(id);
-    if (task === undefined) {
+  async findOne(@Param('id') id: number) {
+    const task = await this.tasksService.findOne(id);
+    if (!task) {
       throw new NotFoundException('task not found');
     }
     return task;
   }
 
   @Patch(':id')
-  update(@Param('id') id: number, @Body() dto: UpdateTaskDto) {
-    const task = this.tasksService.update(id, dto);
+  async update(@Param('id') id: number, @Body() dto: UpdateTaskDto) {
+    const task = await this.tasksService.update(id, dto);
 
-    if (task === undefined) {
+    if (!task) {
       throw new NotFoundException('task not found');
     }
 
@@ -54,10 +54,10 @@ export class TasksController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    const task = this.tasksService.remove(id);
+  async remove(@Param('id') id: number) {
+    const task = await this.tasksService.remove(id);
 
-    if (task === undefined) {
+    if (!task) {
       throw new NotFoundException('task not found');
     }
 
