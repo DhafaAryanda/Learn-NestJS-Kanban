@@ -1,20 +1,21 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  Version,
+  Get,
   HttpCode,
   HttpStatus,
-  ParseIntPipe,
   NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Req,
+  Version,
 } from '@nestjs/common';
-import { TasksService } from './tasks.service';
+import { AuthRequest } from 'src/core/requests/auth';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { TasksService } from './tasks.service';
 
 @Controller('tasks')
 export class TasksController {
@@ -22,20 +23,21 @@ export class TasksController {
 
   @Post()
   @HttpCode(HttpStatus.OK) // pada default semua response 200 kecuali post menghasilkan 201, tetapi dapat diubah menggunakan HttpCode
-  create(@Body() dto: CreateTaskDto) {
-    return this.tasksService.create(dto);
+  // @UseGuards(AuthGuard)
+  create(@Req() req: AuthRequest, @Body() dto: CreateTaskDto) {
+    return this.tasksService.create(req.authenticatedUser.id, dto);
   }
 
   @Version('1')
   @Get()
-  async findAll() {
+  async findAll(@Req() req: AuthRequest) {
     // await new Promise((resolve) => setTimeout(resolve, 3000));
-    return this.tasksService.findAll();
+    return this.tasksService.findAll(req.authenticatedUser.id);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: number) {
-    const task = await this.tasksService.findOne(id);
+  async findOne(@Req() req: AuthRequest, @Param('id') id: number) {
+    const task = await this.tasksService.findOne(req.authenticatedUser.id, id);
     if (!task) {
       throw new NotFoundException('task not found');
     }
@@ -43,8 +45,16 @@ export class TasksController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: number, @Body() dto: UpdateTaskDto) {
-    const task = await this.tasksService.update(id, dto);
+  async update(
+    @Req() req: AuthRequest,
+    @Param('id') id: number,
+    @Body() dto: UpdateTaskDto,
+  ) {
+    const task = await this.tasksService.update(
+      req.authenticatedUser.id,
+      id,
+      dto,
+    );
 
     if (!task) {
       throw new NotFoundException('task not found');
@@ -54,8 +64,8 @@ export class TasksController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: number) {
-    const task = await this.tasksService.remove(id);
+  async remove(@Req() req: AuthRequest, @Param('id') id: number) {
+    const task = await this.tasksService.remove(req.authenticatedUser.id, id);
 
     if (!task) {
       throw new NotFoundException('task not found');
